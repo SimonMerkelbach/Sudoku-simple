@@ -6,11 +6,11 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 
 public class Sudoku {
-    // constants adjusting size
-    private static final int FIELD_SIZE = 25;
+    // constants adjusting sizes, can be changed to change appearance
+    private static final int FIELD_SIZE = 35;
     private static final int GAP_SIZE = 10;
-    private static final int MARGIN = 15;
-    
+    private static final int MARGIN = 20;
+    // constants preserving relative sizes, used to place components relative to each other
     private static final int BUTTON_WIDTH = 3 * FIELD_SIZE + 2 * GAP_SIZE;
     private static final int BUTTON_HEIGHT = FIELD_SIZE;
     private static final int CONTENTPANE_WIDTH = 9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN;
@@ -20,23 +20,23 @@ public class Sudoku {
     // object declarations
     private static JFrame jFrame;                   // window
     private static JPanel contentPane;              // contains input fields and buttons
-    private static JFormattedTextField[][] fields;  // input
+    private static JFormattedTextField[][] fields;  // input fields
     private static JButton solveButton;
     private static JButton resetButton;
     private static JButton generateButton;
 
-    private static NumberFormat numberFormat;
-    private static NumberFormatter numberFormatter;
+    private static NumberFormat numberFormat;       // used to filter input
+    private static NumberFormatter numberFormatter; // used to filter input
 
 
     public static void main(String[] args) {
-        // contentPane settings
+        // CONTENTPANE SETTINGS
         contentPane = new JPanel();
         contentPane.setLayout(null);
         contentPane.setPreferredSize(new Dimension(CONTENTPANE_WIDTH, CONTENTPANE_HEIGHT));
 
 
-        // numberformatter used to filter input
+        // NUMBERFORMATTER SETTINGS USED TO FILTER INPUT (ONLY ACCEPT 1 - 9 AS INPUT)
         numberFormat = NumberFormat.getIntegerInstance();
         numberFormatter = new NumberFormatter(numberFormat);
         numberFormatter.setValueClass(Integer.class);
@@ -44,18 +44,23 @@ public class Sudoku {
         numberFormatter.setMaximum(9);
 
 
-        // component initialization, component settings, relative component placement
+        // COMPONENT INTIIALIZATION, COMPONENT SETTINGS
         fields = new JFormattedTextField[9][9];
         for (int i = 0; i < fields.length; i++) {
             for (int j = 0; j < fields[i].length; j++) {
                 fields[i][j] = new JFormattedTextField(numberFormatter);
-                fields[i][j].setBounds(FIELD_SIZE * j + GAP_SIZE * j + MARGIN, FIELD_SIZE * i + GAP_SIZE * i + MARGIN, FIELD_SIZE, FIELD_SIZE);
+                fields[i][j].setBounds(FIELD_SIZE * j + GAP_SIZE * j + MARGIN,
+                                        FIELD_SIZE * i + GAP_SIZE * i + MARGIN,
+                                        FIELD_SIZE, FIELD_SIZE);
+                fields[i][j].setHorizontalAlignment(JTextField.CENTER);
             }
         }
 
         solveButton = new JButton();
         solveButton.setText("Solve!");
-        solveButton.setBounds(MARGIN, 9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT);
+        solveButton.setBounds(MARGIN,
+                                9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN,
+                                BUTTON_WIDTH, BUTTON_HEIGHT);
         solveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -67,7 +72,9 @@ public class Sudoku {
 
         resetButton = new JButton();
         resetButton.setText("Reset!");
-        resetButton.setBounds(MARGIN + BUTTON_WIDTH + GAP_SIZE, 9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT);
+        resetButton.setBounds(MARGIN + BUTTON_WIDTH + GAP_SIZE,
+                                9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN,
+                                BUTTON_WIDTH, BUTTON_HEIGHT);
         resetButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -77,7 +84,9 @@ public class Sudoku {
 
         generateButton = new JButton();
         generateButton.setText("Random!");
-        generateButton.setBounds(MARGIN + 2 * BUTTON_WIDTH + 2 * GAP_SIZE, 9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN, BUTTON_WIDTH, BUTTON_HEIGHT);
+        generateButton.setBounds(MARGIN + 2 * BUTTON_WIDTH + 2 * GAP_SIZE,
+                                9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN,
+                                BUTTON_WIDTH, BUTTON_HEIGHT);
         generateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -86,7 +95,7 @@ public class Sudoku {
         });
 
 
-        // add components to contentPane
+        // ADD COMPONENTS TO CONTENTPANE
         for (int i = 0; i < fields.length; i++) {
             for (int j = 0; j < fields[i].length; j++) {
                 contentPane.add(fields[i][j]);
@@ -97,7 +106,7 @@ public class Sudoku {
         contentPane.add(generateButton);
 
 
-        // JFrame settings
+        // JFRAME SETTINGS
         jFrame = new JFrame();
         jFrame.setTitle("Sudoku");
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -106,8 +115,9 @@ public class Sudoku {
         jFrame.setLocationByPlatform(true);
         jFrame.setVisible(true);
     }
-    
-    
+
+
+    // reads all fields, returns grid
     public static int[][] getGrid () {
         int[][] grid = new int[9][9];
         for (int i = 0; i < 9; i++) {
@@ -122,7 +132,9 @@ public class Sudoku {
         }
         return grid;
     }
-    
+
+
+    // sets all fields to values in grid
     public static void setGrid (int[][] grid) {
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
@@ -132,68 +144,47 @@ public class Sudoku {
     }
 
 
-
-
+    // overloaded method to ensure solveSudoku is called with row = 0 and col = 0
     public static boolean solveSudoku (int[][] grid) {
-        //return solveSudoku(grid, 0, 0);
-        return solve2(grid, 0, 0);
+        return solveSudoku(grid, 0, 0);
     }
 
-    public static boolean solveSudoku (int[][] grid, int row, int col) {
+    // recursively solves a sudoku grid using backtracking
+    private static boolean solveSudoku (int[][] grid, int row, int col) {
+        // last row has been reached
         if (row == 9) {
+            // reset row, advance to next column
             row = 0;
-            if (++col == 9)
+            col++;
+
+            // if last column has been cleared, grid is solved
+            if (col == 9)
                 return true;
         }
-        if (grid[row][col] != 0)  // skip filled cells
-            return solveSudoku(grid, row+1,col);
 
+        // current cell is filled, skip it
+        if (grid[row][col] != 0) {
+            return solveSudoku(grid, row+1,col);
+        }
+
+        // current cell is not filled, try values 1 - 9
         for (int value = 1; value <= 9; value++) {
+            // if value fits, set cell, advance in grid
             if (isValid(grid, value, row, col)) {
                 grid[row][col] = value;
                 if (solveSudoku(grid, row+1,col))
                     return true;
             }
         }
-        grid[row][col] = 0; // reset on backtrack
-        return false;
-    }
-    
-    public static boolean solve2 (int[][] grid, int row, int col) {
-        if (row == 9) {
-            return true;
-        }
-     
-        /*
-         * Is this element already set?  If so, we don't want to 
-         * change it.  Recur immediately to the next cell.
-         */
-        if (grid[row][col] != 0) {
-            if (col == 8) {
-                if (solve2(grid, row+1, 0)) return true;
-            } else {
-                if (solve2(grid, row, col+1)) return true;
-            }
-            return false;
-        }
-        
-        for (int value = 1; value <= 9; value++) {
-            if(isValid(grid, value, row, col)) {
-                grid[row][col] = value;
-                if (col == 8) {
-                    if (solve2(grid, row+1, 0)) return true;
-                } else {
-                    if (solve2(grid, row, col+1)) return true;
-                }
-            // We failed to find a valid value for this 
-               grid[row][col] = 0;
-            }
-        }
-        
+
+        // values 1 - 9 didn't fit in cell, reset cell, backtrack
+        grid[row][col] = 0;
+
         return false;
     }
 
 
+    // checks whether 'value' can be placed in 'grid' at 'row' and 'col'
     private static boolean isValid (int[][] grid, int value, int row, int col) {
         // check rows and columns
         for (int i = 0; i < 9; i++) {
@@ -220,6 +211,8 @@ public class Sudoku {
         return true;
     }
 
+
+    // empties all fields
     private static void resetFields () {
         for (JFormattedTextField[] i : fields) {
             for (JFormattedTextField j : i) {
@@ -229,6 +222,6 @@ public class Sudoku {
     }
 
     private static void generateSudoku () {
-        
+
     }
 }
