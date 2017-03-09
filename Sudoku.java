@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 
 public class Sudoku {
-    // constants adjusting sizes, can be changed to change appearance
+    // constants adjusting sizes, can be changed to change appearance of application
     private static final int FIELD_SIZE = 35;
     private static final int GAP_SIZE = 10;
     private static final int MARGIN = 20;
@@ -23,16 +23,15 @@ public class Sudoku {
     private static JFormattedTextField[][] fields;  // input fields
     private static JButton solveButton;
     private static JButton resetButton;
-    private static JButton generateButton;
 
-    private static NumberFormat numberFormat;       // used to filter input
-    private static NumberFormatter numberFormatter; // used to filter input
+    private static NumberFormat numberFormat;       // used to filter input from input fields
+    private static NumberFormatter numberFormatter; // used to filter input from input fields
 
 
     public static void main(String[] args) {
         // CONTENTPANE SETTINGS
         contentPane = new JPanel();
-        contentPane.setLayout(null);
+        contentPane.setLayout(null);    // don't use a layout manager
         contentPane.setPreferredSize(new Dimension(CONTENTPANE_WIDTH, CONTENTPANE_HEIGHT));
 
 
@@ -44,7 +43,7 @@ public class Sudoku {
         numberFormatter.setMaximum(9);
 
 
-        // COMPONENT INTIIALIZATION, COMPONENT SETTINGS
+        // COMPONENT INTIIALIZATION, COMPONENT SETTINGS (SIZE, PLACEMENT, TEXT, ACTION)
         fields = new JFormattedTextField[9][9];
         for (int i = 0; i < fields.length; i++) {
             for (int j = 0; j < fields[i].length; j++) {
@@ -82,18 +81,6 @@ public class Sudoku {
             }
         });
 
-        generateButton = new JButton();
-        generateButton.setText("Random!");
-        generateButton.setBounds(MARGIN + 2 * BUTTON_WIDTH + 2 * GAP_SIZE,
-                                9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN,
-                                BUTTON_WIDTH, BUTTON_HEIGHT);
-        generateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                generateSudoku();
-            }
-        });
-
 
         // ADD COMPONENTS TO CONTENTPANE
         for (int i = 0; i < fields.length; i++) {
@@ -103,7 +90,6 @@ public class Sudoku {
         }
         contentPane.add(solveButton);
         contentPane.add(resetButton);
-        contentPane.add(generateButton);
 
 
         // JFRAME SETTINGS
@@ -117,7 +103,7 @@ public class Sudoku {
     }
 
 
-    // reads all fields, returns grid
+    // reads all fields, returns grid; empty fields = 0
     public static int[][] getGrid () {
         int[][] grid = new int[9][9];
         for (int i = 0; i < 9; i++) {
@@ -219,9 +205,5 @@ public class Sudoku {
                 j.setText("");
             }
         }
-    }
-
-    private static void generateSudoku () {
-
     }
 }
