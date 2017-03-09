@@ -10,6 +10,7 @@ public class Sudoku {
     private static final int FIELD_SIZE = 25;
     private static final int GAP_SIZE = 10;
     private static final int MARGIN = 15;
+    
     private static final int BUTTON_WIDTH = 3 * FIELD_SIZE + 2 * GAP_SIZE;
     private static final int BUTTON_HEIGHT = FIELD_SIZE;
     private static final int CONTENTPANE_WIDTH = 9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN;
@@ -134,41 +135,64 @@ public class Sudoku {
 
 
     public static boolean solveSudoku (int[][] grid) {
-        return solveSudoku(grid, 0, 0);
+        //return solveSudoku(grid, 0, 0);
+        return solve2(grid, 0, 0);
     }
 
     public static boolean solveSudoku (int[][] grid, int row, int col) {
-        // sudoku is solved
-        if (col > 9) {
-            return true;
+        if (row == 9) {
+            row = 0;
+            if (++col == 9)
+                return true;
         }
+        if (grid[row][col] != 0)  // skip filled cells
+            return solveSudoku(grid, row+1,col);
 
-        // current cell is set
-        else if (grid[row][col] != 0) {
-            if (row == 8) {
-                solveSudoku(grid, 0, col+1);
-            }
-            else {
-                solveSudoku(grid, row+1, col);
+        for (int value = 1; value <= 9; value++) {
+            if (isValid(grid, value, row, col)) {
+                grid[row][col] = value;
+                if (solveSudoku(grid, row+1,col))
+                    return true;
             }
         }
-
-        // current cell is empty
-        else {
-            for (int value = 1; value <= 9; value++) {
-                if (isValid(grid, value, row, col)) {
-                    grid[row][col] = value;
-                    if (row == 8) {
-                        solveSudoku(grid, 0, col+1);
-                    }
-                    else {
-                        solveSudoku(grid, row+1, col);
-                    }
-                }
-            }
-        }
+        grid[row][col] = 0; // reset on backtrack
         return false;
     }
+    
+    public static boolean solve2 (int[][] grid, int row, int col) {
+        if (row == 9) {
+            return true;
+        }
+     
+        /*
+         * Is this element already set?  If so, we don't want to 
+         * change it.  Recur immediately to the next cell.
+         */
+        if (grid[row][col] != 0) {
+            if (col == 8) {
+                if (solve2(grid, row+1, 0)) return true;
+            } else {
+                if (solve2(grid, row, col+1)) return true;
+            }
+            return false;
+        }
+        
+        for (int value = 1; value <= 9; value++) {
+            if(isValid(grid, value, row, col)) {
+                grid[row][col] = value;
+                if (col == 8) {
+                    if (solve2(grid, row+1, 0)) return true;
+                } else {
+                    if (solve2(grid, row, col+1)) return true;
+                }
+            // We failed to find a valid value for this 
+               grid[row][col] = 0;
+            }
+        }
+        
+        return false;
+    }
+
 
     private static boolean isValid (int[][] grid, int value, int row, int col) {
         // check rows and columns
@@ -205,6 +229,6 @@ public class Sudoku {
     }
 
     private static void generateSudoku () {
-
+        
     }
 }
