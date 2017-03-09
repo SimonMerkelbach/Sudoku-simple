@@ -6,18 +6,20 @@ import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 
 public class Sudoku {
-    // constants
-    private static final int FIELD_SIZE = 45;
+    // constants adjusting size
+    private static final int FIELD_SIZE = 25;
     private static final int GAP_SIZE = 10;
-    private static final int MARGIN = 10;
+    private static final int MARGIN = 15;
     private static final int BUTTON_WIDTH = 3 * FIELD_SIZE + 2 * GAP_SIZE;
     private static final int BUTTON_HEIGHT = FIELD_SIZE;
+    private static final int CONTENTPANE_WIDTH = 9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN;
+    private static final int CONTENTPANE_HEIGHT =  9 * FIELD_SIZE + 8 * GAP_SIZE + 3 * MARGIN + BUTTON_HEIGHT;
 
 
     // object declarations
-    private static JFrame jFrame;
-    private static JPanel contentPane;
-    private static JFormattedTextField[][] fields;
+    private static JFrame jFrame;                   // window
+    private static JPanel contentPane;              // contains input fields and buttons
+    private static JFormattedTextField[][] fields;  // input
     private static JButton solveButton;
     private static JButton resetButton;
     private static JButton generateButton;
@@ -30,10 +32,10 @@ public class Sudoku {
         // contentPane settings
         contentPane = new JPanel();
         contentPane.setLayout(null);
-        contentPane.setPreferredSize(new Dimension(9 * FIELD_SIZE + 8 * GAP_SIZE + 2 * MARGIN, 9 * FIELD_SIZE + 8 * GAP_SIZE + 3 * MARGIN + BUTTON_HEIGHT));
+        contentPane.setPreferredSize(new Dimension(CONTENTPANE_WIDTH, CONTENTPANE_HEIGHT));
 
 
-        // numberformatter
+        // numberformatter used to filter input
         numberFormat = NumberFormat.getIntegerInstance();
         numberFormatter = new NumberFormatter(numberFormat);
         numberFormatter.setValueClass(Integer.class);
@@ -41,7 +43,7 @@ public class Sudoku {
         numberFormatter.setMaximum(9);
 
 
-        // component initialization
+        // component initialization, component settings, relative component placement
         fields = new JFormattedTextField[9][9];
         for (int i = 0; i < fields.length; i++) {
             for (int j = 0; j < fields[i].length; j++) {
@@ -56,7 +58,9 @@ public class Sudoku {
         solveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                solveSudoku();
+                int[][] grid = getGrid();
+                solveSudoku(grid);
+                setGrid(grid);
             }
         });
 
@@ -101,6 +105,32 @@ public class Sudoku {
         jFrame.setLocationByPlatform(true);
         jFrame.setVisible(true);
     }
+    
+    
+    public static int[][] getGrid () {
+        int[][] grid = new int[9][9];
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (fields[i][j].getText().equals("")) {
+                    grid[i][j] = 0;
+                }
+                else {
+                    grid[i][j] = Integer.parseInt(fields[i][j].getText());
+                }
+            }
+        }
+        return grid;
+    }
+    
+    public static void setGrid (int[][] grid) {
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                fields[i][j].setText(String.valueOf(grid[i][j]));
+            }
+        }
+    }
+
+
 
 
     public static boolean solveSudoku (int[][] grid) {
@@ -109,7 +139,7 @@ public class Sudoku {
 
     public static boolean solveSudoku (int[][] grid, int row, int col) {
         // sudoku is solved
-        if (row >= 9 || col >= 9) {
+        if (col > 9) {
             return true;
         }
 
@@ -125,7 +155,7 @@ public class Sudoku {
 
         // current cell is empty
         else {
-            for (int value = 1; value <= 10; value++) {
+            for (int value = 1; value <= 9; value++) {
                 if (isValid(grid, value, row, col)) {
                     grid[row][col] = value;
                     if (row == 8) {
@@ -153,12 +183,10 @@ public class Sudoku {
 
         // check boxes
         int boxStartRow = (row / 3) * 3;
-        int boxEndRow = boxStartRow + 2;
         int boxStartCol = (col / 3) * 3;
-        int boxEndCol = boxStartCol + 2;
-        for (int i = boxStartRow; i <= boxEndRow; i++) {
-            for (int j = boxStartCol; j <= boxEndCol; j++) {
-                if (grid[row][col] == value) {
+        for (int i = boxStartRow; i < boxStartRow + 3; i++) {
+            for (int j = boxStartCol; j < boxStartCol + 3; j++) {
+                if (grid[i][j] == value) {
                     return false;
                 }
             }
